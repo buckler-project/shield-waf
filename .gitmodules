@@ -1,0 +1,3 @@
+[submodule "lib/python-buckler"]
+	path = lib/python-buckler
+	url = https://github.com/akakou/python-buckler
