@@ -13,9 +13,6 @@ sys.path.append(path)
 # run
 from lib.buckler import buckler
 
-#b = buckler(b'hogehoge')
-#b = b.scan()
-
 import tornado.httpserver
 import tornado.ioloop
 import tornado.iostream
@@ -35,7 +32,8 @@ class ProxyHandler(tornado.web.RequestHandler):
     def recieve(self):
         req = tornado.httpclient.HTTPRequest(
             url=self.request.uri,
-            method=self.request.method, body=self.request.body,
+            method=self.request.method,
+            body=self.request.body,
             headers=self.request.headers,
             follow_redirects=False,
             allow_nonstandard_methods=True
@@ -43,10 +41,13 @@ class ProxyHandler(tornado.web.RequestHandler):
 
         client = tornado.httpclient.AsyncHTTPClient()
         
-        suspend = f'{req.method} {req.url} HTTP/1.1\r\n{req.__dict__["_headers"]}'
-        print(suspend)
-        
+        suspect = f'{req.method} {req.url} HTTP/1.1\r\n{req.__dict__["_headers"]}'
+        _buckler = buckler(suspect.encode())
+        result = _buckler.scan()
+
         try:
+            if result:
+                raise tornado.httpclient.HTTPError(403)
             client.fetch(req, self.get_response)
 
         except tornado.httpclient.HTTPError as e:
