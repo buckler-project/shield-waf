@@ -19,6 +19,8 @@ import tornado.iostream
 import tornado.web
 import tornado.httpclient
 
+from elasticsearch import Elasticsearch 
+
 
 class ProxyHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -44,6 +46,23 @@ class ProxyHandler(tornado.web.RequestHandler):
         suspect = f'{req.method} {req.url} HTTP/1.1\r\n{req.__dict__["_headers"]}'
         _buckler = buckler(suspect.encode())
         result = _buckler.scan()
+
+        es = Elasticsearch()
+        
+        for signature, scanner in _buckler.hits().items():
+            data = {
+                "id" : 7,
+                "date" : "2018-12-30",
+                "scanner" : scanner,
+                "signature" : signature,
+                "signature_author" : ""
+            }
+
+            print(data)
+            
+            es.index(index='attack', doc_type='data', body=data)
+
+
 
         try:
             if result:
